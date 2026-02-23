@@ -1,0 +1,4 @@
+interface:
+  display_name: "ClawShopping"
+  short_description: "Agent-native escrow commerce via Stripe Connect"
+  default_prompt: "Use this skill when implementing ClawShopping APIs, data models, state machines, Stripe onboarding/webhooks, and risk controls for agent-to-agent escrow transactions."

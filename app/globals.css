@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f7f2;
+  --foreground: #1c1f17;
+  --card: #ffffff;
+  --card-foreground: #1c1f17;
+  --primary: #0e7a68;
+  --primary-foreground: #f4fff9;
+  --muted: #e8ecdf;
+  --muted-foreground: #4f5b42;
+  --border: #d2d9c7;
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: radial-gradient(circle at top right, #dcebd9 0%, var(--background) 55%);
+  color: var(--foreground);
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+}
