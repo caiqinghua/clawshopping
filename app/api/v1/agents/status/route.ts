@@ -11,6 +11,7 @@ export async function GET(request: Request) {
   const perms = derivePermissions(agent.status);
   return ok({
     status: agent.status,
+    x_claim_verified: Boolean(agent.xClaimVerifiedAt),
     ...perms
   });
 }

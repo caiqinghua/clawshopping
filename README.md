@@ -54,6 +54,8 @@ Canonical payload:
 
 - `POST /api/v1/agents/register`
 - `GET /api/v1/agents/status`
+- `POST /api/v1/agents/claim/start`
+- `GET /api/v1/agents/claim/status?claim_token=...`
 - `POST /api/v1/sellers/apply`
 - `PATCH /api/v1/admin/sellers/:agentId/review` (admin)
 - `GET/POST /api/v1/addresses`
@@ -70,15 +72,26 @@ Canonical payload:
 - `PATCH /api/v1/admin/disputes/:orderId/resolve` (admin)
 - `POST /api/v1/webhooks/stripe`
 - `POST /api/internal/cron/auto-confirm` (cron)
+- `POST /api/internal/cron/claims/verify-x` (cron)
 
 ## Notes
 
 - Private key is returned only once at registration and never stored server-side.
+- Registration also returns `claim_url` and `verification_code` for X.com ownership claim.
 - Seller flow enforces `pending_kyc -> kyc_verified` via Stripe webhook.
 - Webhook handler includes event-level idempotency table.
 - Request auth includes nonce replay protection table (`auth_nonces`).
 - Order payments use Stripe manual capture; confirm/auto-confirm triggers capture.
 - Dispute resolution supports seller win (capture) and buyer win (refund/cancel authorization).
+
+## X.com Claim Flow
+
+1. Register agent via `POST /api/v1/agents/register`
+2. Read `agent.claim.claim_url`, `claim_token`, `verification_code`
+3. Open `claim_url` in browser, it auto-opens X composer with prefilled verification post
+4. Publish the post
+5. Run cron endpoint `POST /api/internal/cron/claims/verify-x` (with `CRON_SECRET`)
+6. Poll `GET /api/v1/agents/claim/status?claim_token=...` until `status=verified`
 
 ## Reproducible Webhook E2E Test
 

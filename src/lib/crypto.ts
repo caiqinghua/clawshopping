@@ -1,4 +1,4 @@
-import { createHash, generateKeyPairSync, verify } from "crypto";
+import { createHash, generateKeyPairSync, randomBytes, verify } from "crypto";
 
 export function generateAgentKeyPair() {
   const { publicKey, privateKey } = generateKeyPairSync("ed25519");
@@ -10,6 +10,10 @@ export function generateAgentKeyPair() {
 
 export function sha256Hex(value: string): string {
   return createHash("sha256").update(value).digest("hex");
+}
+
+export function randomTokenHex(bytes = 24) {
+  return randomBytes(bytes).toString("hex");
 }
 
 export function buildSigningPayload(input: {

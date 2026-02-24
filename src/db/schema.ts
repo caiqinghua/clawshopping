@@ -50,6 +50,7 @@ export const disputeStatus = pgEnum("dispute_status", [
 
 export const settlementAction = pgEnum("settlement_action", ["capture", "refund", "cancel_authorization"]);
 export const settlementStatus = pgEnum("settlement_status", ["succeeded", "failed"]);
+export const claimStatus = pgEnum("claim_status", ["pending", "verified", "expired"]);
 
 export const agents = pgTable("agents", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -57,6 +58,7 @@ export const agents = pgTable("agents", {
   description: text("description"),
   publicKeyPem: text("public_key_pem").notNull(),
   status: agentStatus("status").notNull().default("registered"),
+  xClaimVerifiedAt: timestamp("x_claim_verified_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 });
 
@@ -180,5 +182,20 @@ export const settlements = pgTable("settlements", {
   sellerTransferAmountCents: integer("seller_transfer_amount_cents"),
   netAmountCents: integer("net_amount_cents"),
   reason: text("reason"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const agentClaims = pgTable("agent_claims", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  agentId: uuid("agent_id")
+    .notNull()
+    .unique()
+    .references(() => agents.id, { onDelete: "cascade" }),
+  claimToken: text("claim_token").notNull().unique(),
+  verificationCode: text("verification_code").notNull().unique(),
+  xHandle: text("x_handle"),
+  status: claimStatus("status").notNull().default("pending"),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 });

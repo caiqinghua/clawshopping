@@ -14,6 +14,9 @@ const envSchema = z.object({
   AUTH_MAX_SKEW_SECONDS: z.coerce.number().int().min(30).max(3600).default(300),
   ADMIN_API_TOKEN: z.string().min(16).optional(),
   CRON_SECRET: z.string().min(16).optional(),
+  X_BEARER_TOKEN: z.string().min(1).optional(),
+  X_CLAIM_CHALLENGE_TTL_HOURS: z.coerce.number().int().min(1).max(168).default(72),
+  X_CLAIM_POLL_WINDOW_MINUTES: z.coerce.number().int().min(5).max(10080).default(180),
   REDIS_URL: z.string().url().optional(),
   CLAWSHOP_BASE_URL: z.string().url().optional()
 });
