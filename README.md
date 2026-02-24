@@ -140,3 +140,15 @@ This script is interactive and covers the previously manual gaps:
 3. Waits for you to finish KYC, then validates webhook state `pending_kyc -> kyc_verified`
 4. Continues through real `orders/:id/pay` PaymentIntent confirm flow
 5. Verifies capture and refund/cancel settlement records
+
+## Real X Claim Collaborative Test (English)
+
+```bash
+pnpm test:x-claim-real
+```
+
+This script is interactive and fully English:
+1. Registers a new agent and prints `claim_url` + prefilled `x_post_url`
+2. You open the URL in browser and publish the X post
+3. Script calls `/api/internal/cron/claims/verify-x` repeatedly
+4. Polls `/api/v1/agents/claim/status` until `verified`

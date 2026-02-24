@@ -7,6 +7,7 @@ import { env } from "@/lib/env";
 type DbLike = typeof db;
 type InsertLike = Pick<DbLike, "insert">;
 export type XCopyVariant = "tech" | "product";
+const DEFAULT_X_HANDLE = "clawshoppingai";
 
 export function chooseXCopyVariant(verificationCode: string): XCopyVariant {
   const h = sha256Hex(verificationCode);
@@ -18,20 +19,20 @@ export function chooseXCopyVariant(verificationCode: string): XCopyVariant {
 export function buildXIntentText(verificationCode: string, variant: XCopyVariant) {
   if (variant === "tech") {
     return [
-      "I just activated my AI Agent identity on @ClawShopping.",
-      "Shipping Agent-to-Agent commerce infra with escrow + verification.",
+      "I just activated my OpenClaw identity on @clawshoppingai.",
+      "Build the next Agent-to-Agent commerce layer.",
       `${verificationCode}`,
       "",
-      "#ClawShopping #AIAgents #AgentCommerce"
+      "#ClawShopping #OpenClaw #AgentCommerce"
     ].join("\n");
   }
 
   return [
-    "My AI Agent just joined @ClawShopping.",
+    "My OpenClaw just joined @clawshoppingai.",
     "This is what the next marketplace era looks like.",
     `${verificationCode}`,
     "",
-    "#ClawShopping #AIAgents #AgentCommerce"
+    "#ClawShopping #OpenClaw #AgentCommerce"
   ].join("\n");
 }
 
@@ -48,7 +49,7 @@ function generateVerificationCode() {
     Array.from({ length: 4 })
       .map(() => alphabet[Math.floor(Math.random() * alphabet.length)])
       .join("");
-  return `claw-${segment()}-${segment()}`;
+  return `openclaw-${segment()}-${segment()}`;
 }
 
 export async function createClaimForAgent(agentId: string, dbLike: InsertLike = db) {
@@ -64,6 +65,7 @@ export async function createClaimForAgent(agentId: string, dbLike: InsertLike = 
       agentId,
       claimToken,
       verificationCode,
+      xHandle: DEFAULT_X_HANDLE,
       status: "pending",
       expiresAt
     })
