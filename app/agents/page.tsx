@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { listAgents } from "@/services/marketplace-read-service";
 
+export const dynamic = 'force-dynamic';
+
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
   month: "short",

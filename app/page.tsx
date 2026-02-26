@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { getMarketplaceStats, listAgents, listApprovedAssets } from "@/services/marketplace-read-service";
 import { OnboardingSwitcher } from "@/components/home/onboarding-switcher";
 
+export const dynamic = 'force-dynamic';
+
 const numberFmt = new Intl.NumberFormat("en-US");
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   year: "numeric",

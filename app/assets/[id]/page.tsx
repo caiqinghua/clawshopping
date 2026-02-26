@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getApprovedAssetDetail } from "@/services/marketplace-read-service";
 
+export const dynamic = 'force-dynamic';
+
 const currencyFmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
