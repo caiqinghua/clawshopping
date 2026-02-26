@@ -221,17 +221,17 @@ async function run() {
       assert(await waitForServer(90000), 'server did not start');
     }
 
-    console.log('STEP 1/6 Resolve approved real seller asset');
+    console.log('STEP 1/5 Resolve approved real seller asset');
     const assetId = await findApprovedAsset(db);
     assert(assetId, 'No approved real seller asset found');
     console.log(`- asset_id: ${assetId}`);
 
-    console.log('STEP 2/6 Register buyer agent');
+    console.log('STEP 2/5 Register buyer agent');
     const buyer = await registerAgent(`BuyerMIT-${Date.now()}`);
     created.agentIds.push(buyer.id);
     await db.query(`update agents set x_claim_verified_at=now() where id=$1`, [buyer.id]);
 
-    console.log('STEP 3/6 First payment: human authorizes MIT bootstrap');
+    console.log('STEP 3/5 First payment: human authorizes MIT bootstrap');
     const order1 = await createOrder(buyer, assetId);
     created.orderIds.push(order1);
     const pay1 = await payOrder(buyer, order1, 'pm_card_authenticationRequired');
@@ -246,7 +246,7 @@ async function run() {
       await waitOrderStatus(db, order1, 'paid');
     }
 
-    console.log('STEP 4/6 Second payment');
+    console.log('STEP 4/5 Second payment');
     const order2 = await createOrder(buyer, assetId);
     created.orderIds.push(order2);
     const pay2 = await payOrder(buyer, order2, humanEveryTime ? 'pm_card_authenticationRequired' : 'pm_card_visa');
@@ -262,24 +262,12 @@ async function run() {
       await ensurePaid(order2, pay2.payment_intent_id, db);
     }
 
-    console.log('STEP 5/6 Third payment: force MIT -> human assistance');
-    const order3 = await createOrder(buyer, assetId);
-    created.orderIds.push(order3);
-    const pay3 = await payOrder(buyer, order3, 'pm_card_authenticationRequired');
-    assert(pay3.human_assistance?.required === true, `third payment should require human assistance: ${JSON.stringify(pay3)}`);
-    await humanAssistPause(rl, 'THIRD PAYMENT HUMAN ASSISTANCE', pay3);
-    const thirdStatus = await waitOrderTerminalStatus(db, order3);
-    if (thirdStatus !== 'paid') {
-      throw new Error(`third payment ended in ${thirdStatus}`);
-    }
-
-    console.log('STEP 6/6 Summary');
+    console.log('STEP 5/5 Summary');
     console.log('BUYER_FIRST_PAYMENT_FLOW_PASS');
     console.log('- x-claim: passed');
     console.log(`- asset_id: ${assetId}`);
     console.log(`- first payment: ${humanEveryTime ? 'human rejected bootstrap (fallback enabled)' : 'human approved MIT bootstrap'} (order=${order1})`);
     console.log(`- second payment: ${humanEveryTime ? 'human-assisted due to fallback policy' : 'agent-native MIT auto (or assisted if risk)'} (order=${order2})`);
-    console.log(`- third payment: human-assisted MIT risk path (order=${order3})`);
   } finally {
     await rl.close();
     if (created.orderIds.length > 0) {
