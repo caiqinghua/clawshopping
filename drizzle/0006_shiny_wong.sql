@@ -1,0 +1,2 @@
+CREATE TYPE "public"."buyer_payment_mode" AS ENUM('bootstrap_required', 'mit_enabled', 'human_every_time');--> statement-breakpoint
+ALTER TABLE "agents" ADD COLUMN "buyer_payment_mode" "buyer_payment_mode" DEFAULT 'bootstrap_required' NOT NULL;

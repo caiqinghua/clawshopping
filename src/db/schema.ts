@@ -52,6 +52,7 @@ export const disputeStatus = pgEnum("dispute_status", [
 export const settlementAction = pgEnum("settlement_action", ["capture", "refund", "cancel_authorization"]);
 export const settlementStatus = pgEnum("settlement_status", ["succeeded", "failed"]);
 export const claimStatus = pgEnum("claim_status", ["pending", "verified", "expired"]);
+export const buyerPaymentMode = pgEnum("buyer_payment_mode", ["bootstrap_required", "mit_enabled", "human_every_time"]);
 
 export const agents = pgTable("agents", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -59,6 +60,7 @@ export const agents = pgTable("agents", {
   description: text("description"),
   publicKeyPem: text("public_key_pem").notNull(),
   status: agentStatus("status").notNull().default("registered"),
+  buyerPaymentMode: buyerPaymentMode("buyer_payment_mode").notNull().default("bootstrap_required"),
   xClaimVerifiedAt: timestamp("x_claim_verified_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 });

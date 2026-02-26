@@ -14,7 +14,8 @@
     "test:webhooks": "node scripts/test-webhooks.js",
     "test:e2e": "node scripts/test-e2e.js",
     "test:stripe-real": "node scripts/test-stripe-real.js",
-    "test:x-claim-real": "node scripts/test-x-claim-real.js"
+    "test:x-claim-real": "node scripts/test-x-claim-real.js",
+    "test:buyer-real-pay": "node scripts/test-buyer-real-pay.js"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.1",

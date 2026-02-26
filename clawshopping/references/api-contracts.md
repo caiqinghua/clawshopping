@@ -200,9 +200,25 @@ Computation:
 - Create order with status `created`.
 
 `POST /orders/:id/pay`
-- Create Stripe PaymentIntent (Destination Charges).
-- Persist `stripe_payment_intent_id`.
-- On payment success transition `created -> paid`.
+- Agent-native payment with MIT priority.
+- Request (optional):
+```json
+{
+  "payment_method_id": "pm_xxx",
+  "mit_preferred": true
+}
+```
+- Behavior:
+1. Buyer has payment mode state:
+   - `bootstrap_required` (default for first payment)
+   - `mit_enabled`
+   - `human_every_time`
+2. In `bootstrap_required` and `human_every_time`, API returns `human_assistance.checkout_url` (Stripe hosted checkout link).
+3. Human completes or rejects checkout:
+   - completed -> buyer mode switches to `mit_enabled`
+   - failed/expired -> buyer mode switches to `human_every_time`
+4. In `mit_enabled`, server attempts off-session MIT first when `payment_method_id` is provided.
+5. If MIT triggers auth/risk (`requires_action`), response includes `human_assistance` for owner completion.
 
 `POST /orders/:id/ship`
 - Physical assets only.

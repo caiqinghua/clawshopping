@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import Stripe from "stripe";
 import { db } from "@/db/client";
-import { disputes, orders, stripeWebhookEvents } from "@/db/schema";
+import { agents, disputes, orders, stripeWebhookEvents } from "@/db/schema";
 import { fail, ok } from "@/lib/api";
 import { env } from "@/lib/env";
 import { markKycVerifiedByStripeAccount } from "@/services/seller-service";
@@ -53,12 +53,15 @@ export async function POST(request: Request) {
       await db
         .update(orders)
         .set({ status: "confirmed" })
-        .where(
-          and(
-            eq(orders.stripePaymentIntentId, paymentIntent.id),
-            eq(orders.status, "paid")
-          )
-        );
+        .where(and(eq(orders.stripePaymentIntentId, paymentIntent.id), eq(orders.status, "paid")));
+      const [order] = await db
+        .select({ buyerAgentId: orders.buyerAgentId })
+        .from(orders)
+        .where(eq(orders.stripePaymentIntentId, paymentIntent.id))
+        .limit(1);
+      if (order) {
+        await db.update(agents).set({ buyerPaymentMode: "mit_enabled" }).where(eq(agents.id, order.buyerAgentId));
+      }
       break;
     }
     case "payment_intent.amount_capturable_updated": {
@@ -66,12 +69,15 @@ export async function POST(request: Request) {
       await db
         .update(orders)
         .set({ status: "paid" })
-        .where(
-          and(
-            eq(orders.stripePaymentIntentId, paymentIntent.id),
-            eq(orders.status, "created")
-          )
-        );
+        .where(and(eq(orders.stripePaymentIntentId, paymentIntent.id), eq(orders.status, "created")));
+      const [order] = await db
+        .select({ buyerAgentId: orders.buyerAgentId })
+        .from(orders)
+        .where(eq(orders.stripePaymentIntentId, paymentIntent.id))
+        .limit(1);
+      if (order) {
+        await db.update(agents).set({ buyerPaymentMode: "mit_enabled" }).where(eq(agents.id, order.buyerAgentId));
+      }
       break;
     }
     case "payment_intent.payment_failed": {
@@ -79,12 +85,49 @@ export async function POST(request: Request) {
       await db
         .update(orders)
         .set({ status: "cancelled" })
-        .where(
-          and(
-            eq(orders.stripePaymentIntentId, paymentIntent.id),
-            eq(orders.status, "created")
-          )
-        );
+        .where(and(eq(orders.stripePaymentIntentId, paymentIntent.id), eq(orders.status, "created")));
+      const [order] = await db
+        .select({ buyerAgentId: orders.buyerAgentId })
+        .from(orders)
+        .where(eq(orders.stripePaymentIntentId, paymentIntent.id))
+        .limit(1);
+      if (order) {
+        await db.update(agents).set({ buyerPaymentMode: "human_every_time" }).where(eq(agents.id, order.buyerAgentId));
+      }
+      break;
+    }
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const orderId = session.metadata?.order_id;
+      const paymentIntentId = typeof session.payment_intent === "string" ? session.payment_intent : null;
+      if (!orderId || !paymentIntentId) break;
+
+      const [order] = await db.select({ id: orders.id, buyerAgentId: orders.buyerAgentId, status: orders.status }).from(orders).where(eq(orders.id, orderId)).limit(1);
+      if (!order) break;
+
+      await db
+        .update(orders)
+        .set({
+          stripePaymentIntentId: paymentIntentId,
+          status: order.status === "created" ? "paid" : order.status
+        })
+        .where(eq(orders.id, order.id));
+
+      await db.update(agents).set({ buyerPaymentMode: "mit_enabled" }).where(eq(agents.id, order.buyerAgentId));
+      break;
+    }
+    case "checkout.session.expired": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const orderId = session.metadata?.order_id;
+      if (!orderId) break;
+      const [order] = await db
+        .select({ id: orders.id, buyerAgentId: orders.buyerAgentId, status: orders.status })
+        .from(orders)
+        .where(eq(orders.id, orderId))
+        .limit(1);
+      if (!order || order.status !== "created") break;
+      await db.update(orders).set({ status: "cancelled" }).where(eq(orders.id, order.id));
+      await db.update(agents).set({ buyerPaymentMode: "human_every_time" }).where(eq(agents.id, order.buyerAgentId));
       break;
     }
     case "charge.dispute.created": {
