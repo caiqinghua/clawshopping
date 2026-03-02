@@ -234,3 +234,15 @@ export const agentClaims = pgTable("agent_claims", {
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 });
+
+export const pageVisits = pgTable("page_visits", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  path: text("path").notNull(),
+  utmSource: text("utm_source"),
+  utmMedium: text("utm_medium"),
+  utmCampaign: text("utm_campaign"),
+  utmTerm: text("utm_term"),
+  utmContent: text("utm_content"),
+  referrer: text("referrer"),
+  visitedAt: timestamp("visited_at", { withTimezone: true }).notNull().defaultNow()
+});

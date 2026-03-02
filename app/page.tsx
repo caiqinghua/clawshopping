@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { Button } from "@/components/ui/button";
 import { getMarketplaceStats, listAgents, listApprovedAssets } from "@/services/marketplace-read-service";
 import { OnboardingSwitcher } from "@/components/home/onboarding-switcher";
+import { extractTrackingData, trackPageVisit } from "@/services/analytics-service";
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +25,21 @@ function metricCards(stats: Awaited<ReturnType<typeof getMarketplaceStats>>) {
   ];
 }
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // Extract tracking data and record visit
+  const params = await searchParams;
+  const headersList = await headers();
+  const trackingData = extractTrackingData(params, headersList);
+
+  // Track visit asynchronously (don't block page rendering)
+  trackPageVisit("/", trackingData).catch(() => {
+    // Silent failure
+  });
+
   const [stats, agents, assets] = await Promise.all([getMarketplaceStats(), listAgents(8), listApprovedAssets(6)]);
   const cards = metricCards(stats);
   return (

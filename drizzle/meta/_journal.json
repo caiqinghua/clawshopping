@@ -71,6 +71,13 @@
       "when": 1772093712957,
       "tag": "0009_thick_randall",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1772465692511,
+      "tag": "0010_dazzling_doctor_spectrum",
+      "breakpoints": true
     }
   ]
 }
